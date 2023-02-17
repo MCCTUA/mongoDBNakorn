@@ -15,21 +15,32 @@ app.set("views", path.join(__dirname, "./views"));
 app.get("/", async (req, res) => {
   const page = req.query.page ? Number(req.query.page) : 1;
   const limit = 20;
-  const pipeline = [{ $skip: (page - 1) * limit }, { $limit: limit }];
-
-  if (req.query.keyword) {
-    pipeline.unshift({ $match: { title: { $regex: req.query.keyword } } });
-  }
+  const keyword = req.query.keyword
+    ? { title: { $regex: req.query.keyword } }
+    : {};
+  const pipeline = [
+    { $match: keyword },
+    { $project: { title: 1, type: 1, languages: 1, release: 1 } },
+    { $skip: (page - 1) * limit },
+    { $limit: limit },
+  ];
 
   const movies = await col.aggregate(pipeline).toArray();
   // .find()
   // .skip((page - 1) * limit)
   // .limit(20)
   // .toArray();
-  const total = await col.countDocuments();
+  const total = await col.countDocuments(keyword);
   const totalPage = Math.ceil(total / limit);
 
-  res.render("index", { movies, page, limit, total, totalPage });
+  res.render("index", {
+    keywordInput: req.query.keyword,
+    movies,
+    page,
+    limit,
+    total,
+    totalPage,
+  });
 });
 
 app.listen(3000, () => {

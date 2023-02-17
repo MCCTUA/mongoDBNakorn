@@ -37,7 +37,8 @@ html(lang="en")
         - let pageIndex = 1
         while pageIndex <= totalPage
           li.page-item(class=page == pageIndex ? 'active' : '')
-            a.page-link(href=`?page=${pageIndex}`)= pageIndex++
+            a.page-link(href=`?page=${pageIndex}${keywordInput ? `&keyword=${keywordInput}` : ''}`)= pageIndex++
+
 
 
 
